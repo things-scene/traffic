@@ -17,17 +17,17 @@ var { RectPath, Shape } = scene
 
 class Ray {
 
-  constructor(id, cx, cy, length, ttl) {
+  constructor(id, length, ttl) {
     this.id = id;
     this.startedAt = Date.now();
     this.ttl = ttl;
 
     var theta = Math.random() * Math.PI * 2;
     this.line = {
-      x1: cx,
-      y1: cy,
-      x2: cx + length * Math.cos(theta),
-      y2: cy + length * Math.sin(theta)
+      x1: 0,
+      y1: 0,
+      x2: 0 + length * Math.cos(theta),
+      y2: 0 + length * Math.sin(theta)
     }
   }
 
@@ -90,7 +90,7 @@ export default class TrafficGalaxy extends RectPath(Shape) {
           this.cometDestroyed(id);
         }
       } else {
-        this.cometCreated(id, new Ray(id, x, y, Math.sqrt(width * width + height * height) / 3, 10000));
+        this.cometCreated(id, new Ray(id, Math.sqrt(width * width + height * height) / 3, 10000));
       }
 
       this.invalidate();
@@ -122,9 +122,14 @@ export default class TrafficGalaxy extends RectPath(Shape) {
       width
     } = this.bounds;
 
+    var {
+      x, y
+    } = this.center;
+
     context.beginPath();
     context.fillStyle = this.getState('fillStyle') || 'black';
     context.rect(left, top, width, height);
+    context.clip();
     context.fill();
 
     context.lineCap = 'round';
@@ -143,9 +148,7 @@ export default class TrafficGalaxy extends RectPath(Shape) {
       let strokeStyle = this.getState('rayColor') || '#5577aa';
       if(!ray.ended) {
         let style = Math.round(255 * ray.lastRatio).toString(16);
-        if(style.length == 1)
-          style = '0' + style;
-        strokeStyle = `#${style}2233`;
+        strokeStyle = `#${style.padStart(2, '0')}2233`;
       }
 
       context.beginPath();
@@ -153,8 +156,8 @@ export default class TrafficGalaxy extends RectPath(Shape) {
       context.lineWidth = 1 + weight / (ray.ended ? 3 : 1);
       context.strokeStyle = strokeStyle;
 
-      context.moveTo(line.x1, line.y1);
-      context.lineTo(line.x2, line.y2);
+      context.moveTo(x + line.x1, y + line.y1);
+      context.lineTo(x + line.x2, y + line.y2);
 
       context.stroke();
 
@@ -170,6 +173,58 @@ export default class TrafficGalaxy extends RectPath(Shape) {
 
   get nature(){
     return NATURE;
+  }
+
+  handleQueueIn(data) {
+    var {
+      id, ttl, intime
+    } = data
+
+    this.cometCreated(id, new Ray(id, Math.sqrt(width * width + height * height) / 3, ttl));
+  }
+
+  handleConsume() {
+    var ray = this.rays[id];
+    if(ray) {
+      if(!ray.ended && Math.random() >= 0.0) { // 이 값으로 성능 시뮬레이션.
+        this.cometDestroyed(id);
+      }
+    }
+  }
+
+  handleTimeout() {
+    var ray = this.rays[id];
+    if(ray) {
+      if(!ray.ended && Math.random() >= 0.0) { // 이 값으로 성능 시뮬레이션.
+        this.cometDestroyed(id);
+      }
+    }
+  }
+
+  onchangeData(after, before) {
+    var {
+      data
+    } = after;
+
+    var {
+      id,
+      ttl,
+      intime
+    } = data
+
+    switch (data.xxx) {
+      case 'inqueue':
+        this.handleQueueIn(data)
+        break;
+      case 'consume':
+        this.handleConsume(data)
+        break;
+      case 'timeout':
+        this.handleTimeout(data)
+        break;
+    }
+
+    this.invalidate();
   }
 }
 
