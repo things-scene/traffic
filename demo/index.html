@@ -1,0 +1,99 @@
+<!--
+@license
+Copyright © HatioLab Inc. All rights reserved.
+-->
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes">
+    <title>traffic Demo</title>
+    <script src="../../webcomponentsjs/webcomponents-lite.min.js"></script>
+
+    <link rel="import" href="../../things-scene-viewer/things-scene-viewer.html">
+    <link rel="import" href="../../things-scene-viewer/things-scene-layer.html">
+    <link rel="import" href="../../things-scene-viewer/things-scene-handler.html">
+
+    <link rel="import" href="../../things-designer-elements/things-editor-properties.html">
+
+    <link rel="import" href="./things-scene-traffic.html">
+
+    <link rel="import" href="./things-theme.html">
+
+    <style is="custom-style" include="things-theme">
+    things-scene-viewer {
+      display: block;
+      width: 800px;
+      height: 600px;
+    }
+    </style>
+  </head>
+  <body unresolved>
+
+    <template is="dom-bind" id="app">
+      <p>An example of <code>&lt;traffic&gt;</code>:</p>
+
+      <things-scene-viewer id='scene'
+                           scene='{{scene}}'
+                           selected='{{selected}}'
+                           model='[[model]]'
+                           mode="1">
+        <things-scene-layer type="selection-layer"></things-scene-layer>
+        <things-scene-layer type="modeling-layer"></things-scene-layer>
+        <things-scene-handler type="text-editor"></things-scene-handler>
+        <things-scene-handler type="move-handler"></things-scene-handler>
+      </things-scene-viewer>
+
+      <p>Properties</p>
+      <things-editor-properties id='props' target="{{props}}" props="[[selected.0.nature.properties]]">
+      </things-editor-properties>
+
+    </template>
+
+    <script>
+      window.addEventListener('WebComponentsReady', function(e) {
+        var app = document.querySelector('#app')
+
+        app.props = {}
+
+        setTimeout(function() {
+          app.scene.on('selected', function(after) {
+            var target = after[0]
+            var props = {}
+            if(target) {
+              target.nature.properties.forEach(function(prop) {
+                var property = prop.property
+                props[property] = target.model[property]
+              })
+            }
+            app.props = props
+          });
+        });
+
+        app.$.props.addEventListener('change', function() {
+          app.selected[0].set(app.props)
+        });
+
+        app.model = {
+          width: 800,
+          height: 600,
+          components: [{
+            type: 'traffic-galaxy',
+            top: 100,
+            left: 100,
+            width: 600,
+            height: 400,
+            fontSize: 40,
+            fillStyle: 'black',
+            rayColor: 'white',
+            fontColor: '#FF0000',
+            strokeStyle: '#000',
+            lineWidth: 0,
+            text: '',
+            lineCap: 'round'
+          }]
+        }
+      });
+    </script>
+  </body>
+</html>
