@@ -82,19 +82,23 @@ export default class TrafficGalaxy extends RectPath(Shape) {
       x, y
     } = this.center;
 
-    setInterval(() => {
-      var id = Math.round(Math.random() * 100);
-      var ray = this.rays[id];
-      if(ray) {
-        if(!ray.ended && Math.random() >= 0.0) { // 이 값으로 성능 시뮬레이션.
-          this.cometDestroyed(id);
-        }
-      } else {
-        this.cometCreated(id, new Ray(id, Math.sqrt(width * width + height * height) / 3, 10000));
-      }
+    // setInterval(() => {
+    //   var id = Math.round(Math.random() * 100);
+    //   var ray = this.rays[id];
+    //   if(ray) {
+    //     if(!ray.ended && Math.random() >= 0.0) { // 이 값으로 성능 시뮬레이션.
+    //       this.cometDestroyed(id);
+    //     }
+    //   } else {
+    //     this.cometCreated(id, new Ray(id, Math.sqrt(width * width + height * height) / 3, 10000));
+    //   }
 
-      this.invalidate();
-    }, 10);
+    //   this.invalidate();
+    // }, 10);
+    requestAnimationFrame(() => {
+      this.added();
+    })
+    this.invalidate();
   }
 
   get rays() {
@@ -178,27 +182,33 @@ export default class TrafficGalaxy extends RectPath(Shape) {
   handleQueueIn(data) {
     var {
       id, ttl, intime
-    } = data
+    } = data;
+
+    var {
+      width,
+      height
+    } = this.bounds
 
     this.cometCreated(id, new Ray(id, Math.sqrt(width * width + height * height) / 3, ttl));
   }
 
-  handleConsume() {
-    var ray = this.rays[id];
-    if(ray) {
-      if(!ray.ended && Math.random() >= 0.0) { // 이 값으로 성능 시뮬레이션.
-        this.cometDestroyed(id);
-      }
-    }
+  handleConsume(data) {
+    var {
+      id
+    } = data;
+
+    this.cometDestroyed(id);
   }
 
   handleTimeout() {
-    var ray = this.rays[id];
-    if(ray) {
-      if(!ray.ended && Math.random() >= 0.0) { // 이 값으로 성능 시뮬레이션.
-        this.cometDestroyed(id);
-      }
-    }
+    // timeout일 경우 무엇을 해야하나?
+
+    // var ray = this.rays[id];
+    // if(ray) {
+    //   if(!ray.ended && Math.random() >= 0.0) { // 이 값으로 성능 시뮬레이션.
+    //     this.cometDestroyed(id);
+    //   }
+    // }
   }
 
   onchangeData(after, before) {
@@ -206,25 +216,31 @@ export default class TrafficGalaxy extends RectPath(Shape) {
       data
     } = after;
 
-    var {
-      id,
-      ttl,
-      intime
-    } = data
+    if (!data)
+      return;
 
-    switch (data.xxx) {
-      case 'inqueue':
-        this.handleQueueIn(data)
-        break;
-      case 'consume':
-        this.handleConsume(data)
-        break;
-      case 'timeout':
-        this.handleTimeout(data)
-        break;
-    }
+    if (!data instanceof Array)
+      data = [data]
+
+    data.forEach(d => {
+      switch (d.type) {
+        case 'publish':
+          this.handleQueueIn(d)
+          break;
+        case 'consume':
+          this.handleConsume(d)
+          break;
+        case 'timeout':
+          this.handleTimeout(d)
+          break;
+      }
+    })
 
     this.invalidate();
+  }
+
+  onchange(after, before) {
+    console.log('onchange')
   }
 }
 
