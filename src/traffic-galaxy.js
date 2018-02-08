@@ -70,33 +70,17 @@ class Ray {
 export default class TrafficGalaxy extends RectPath(Shape) {
 
   dispose() {
+    if (this._rap) {
+      cancelAnimationFrame(this._rap);
+      delete this._rap;
+    }
+
     super.dispose();
   }
 
-  added() {
-    var {
-      width, height
-    } = this.bounds;
-
-    var {
-      x, y
-    } = this.center;
-
-    // setInterval(() => {
-    //   var id = Math.round(Math.random() * 100);
-    //   var ray = this.rays[id];
-    //   if(ray) {
-    //     if(!ray.ended && Math.random() >= 0.0) { // 이 값으로 성능 시뮬레이션.
-    //       this.cometDestroyed(id);
-    //     }
-    //   } else {
-    //     this.cometCreated(id, new Ray(id, Math.sqrt(width * width + height * height) / 3, 10000));
-    //   }
-
-    //   this.invalidate();
-    // }, 10);
-    requestAnimationFrame(() => {
-      this.added();
+  ready() {
+    this._rap = requestAnimationFrame(() => {
+      this.ready();
     })
     this.invalidate();
   }
@@ -155,15 +139,19 @@ export default class TrafficGalaxy extends RectPath(Shape) {
         strokeStyle = `#${style.padStart(2, '0')}2233`;
       }
 
+      context.save();
       context.beginPath();
 
       context.lineWidth = 1 + weight / (ray.ended ? 3 : 1);
       context.strokeStyle = strokeStyle;
+      context.globalAlpha = ray.lastRatio % 1;
 
       context.moveTo(x + line.x1, y + line.y1);
       context.lineTo(x + line.x2, y + line.y2);
 
       context.stroke();
+
+      context.restore();
 
       if(ray.ended && ray.lastRatio >= 1) {
         delete this.rays[ray.id];
@@ -201,14 +189,8 @@ export default class TrafficGalaxy extends RectPath(Shape) {
   }
 
   handleTimeout() {
-    // timeout일 경우 무엇을 해야하나?
-
-    // var ray = this.rays[id];
-    // if(ray) {
-    //   if(!ray.ended && Math.random() >= 0.0) { // 이 값으로 성능 시뮬레이션.
-    //     this.cometDestroyed(id);
-    //   }
-    // }
+    // 폭발!
+    // this.cometBoom();
   }
 
   onchangeData(after, before) {
@@ -240,7 +222,7 @@ export default class TrafficGalaxy extends RectPath(Shape) {
   }
 
   onchange(after, before) {
-    console.log('onchange')
+
   }
 }
 
