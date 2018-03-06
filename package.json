@@ -1,9 +1,9 @@
 {
-  "name": "@things-elements/things-scene-traffic",
-  "version": "0.1.3",
+  "name": "@things-scene/traffic",
+  "version": "0.2.0",
   "description": "An traffic monitor component for things-scene.",
+  "things-scene": true,
   "main": "src/index.js",
-  "things-shell": true,
   "directories": {
     "test": "test"
   },
@@ -23,7 +23,7 @@
   },
   "homepage": "https://github.com/ThingsElements/things-scene-traffic#readme",
   "devDependencies": {
-    "@hatiolab/things-shell": "^0.2.27"
+    "@hatiolab/things-shell": "^0.3.0"
   },
   "dependencies": {
     "@hatiolab/things-scene": "^2.2.44"
