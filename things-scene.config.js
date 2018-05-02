@@ -24,7 +24,7 @@ var templates = [{
   }
 }];
 
-module.exports = {
+export default {
   templates,
   locales
 };
