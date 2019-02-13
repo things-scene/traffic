@@ -13,7 +13,7 @@ const NATURE = {
   }]
 }
 
-var { RectPath, Shape } = scene
+import { Component, RectPath, Shape } from '@hatiolab/things-scene';
 
 class Ray {
 
@@ -226,4 +226,4 @@ export default class TrafficGalaxy extends RectPath(Shape) {
   }
 }
 
-scene.Component.register('traffic-galaxy', TrafficGalaxy);
+Component.register('traffic-galaxy', TrafficGalaxy);
